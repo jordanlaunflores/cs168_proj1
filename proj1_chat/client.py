@@ -21,12 +21,15 @@ class Client(object):
         	sys.stdout.write(error_message + "\n")
         	sys.exit()
         init_msg = "/name " + name
-        self.send_buffer(init_msg)
+	init_msg = self.send_buffer(init_msg)
+        self.socket.send(init_msg)
+
+	sys.stdout.write('[Me] '); sys.stdout.flush()
 
     def send_buffer(self, msg):
 		while len(msg) < RECV_BUFFER:
 			msg += " "
-		self.socket.send(msg)
+		return msg
 
     def start(self):
     	while 1:
@@ -36,18 +39,21 @@ class Client(object):
     			if sock == self.socket:
     				# message from server
     				data = sock.recv(RECV_BUFFER)
+				sys.stdout.write(utils.CLIENT_WIPE_ME)
     				if data:
-    					sys.stdout.write(data.strip())
-    					#sys.stdout.write('[Me] ')
+    					sys.stdout.write("\r" + data.strip() + "\n")
+    					sys.stdout.write('[Me] '); sys.stdout.flush()
     				else:
     					error_message = utils.CLIENT_SERVER_DISCONNECTED.format(self.address, self.port)
-    					sys.stdout.write(error_message)
+    					sys.stdout.write("\r" + error_message + "\n")
+					sys.exit()
     			else:
 					# sending message
-					msg = sys.stdin.readLine()
-					print msg
-					sys.stdout.write("Sending " + msg)
-					self.send_buffer(msg)
+					msg = sys.stdin.readline()
+					msg = self.send_buffer(msg)
+					self.socket.send(msg)
+					sys.stdout.write('[Me] '); sys.stdout.flush()
+					
 
 args = sys.argv
 if len(args) != 4:
